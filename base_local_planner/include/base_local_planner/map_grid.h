@@ -36,6 +36,7 @@
 
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include <base_local_planner/trajectory_inc.h>
 #include <ros/console.h>
 #include <ros/ros.h>
@@ -193,7 +194,6 @@ namespace base_local_planner{
     private:
 
       std::vector<MapCell> map_; ///< @brief Storage for the MapCells
-
   };
 };
 

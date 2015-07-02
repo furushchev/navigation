@@ -33,6 +33,7 @@
  *********************************************************************/
 #include <base_local_planner/map_grid.h>
 #include <costmap_2d/cost_values.h>
+#include <iomanip>
 using namespace std;
 
 namespace base_local_planner{
@@ -82,6 +83,7 @@ namespace base_local_planner{
   }
 
   void MapGrid::sizeCheck(unsigned int size_x, unsigned int size_y){
+    ROS_INFO_STREAM("sizeCheck: " << size_x << ", " << size_y);
     if(map_.size() != size_x * size_y)
       map_.resize(size_x * size_y);
 
@@ -105,6 +107,7 @@ namespace base_local_planner{
 
     //if the cell is an obstacle set the max path distance
     unsigned char cost = costmap.getCost(check_cell->cx, check_cell->cy);
+    //    ROS_INFO("(%d, %d):\t%d", check_cell->cx, check_cell->cy, cost);
     if(! getCell(check_cell->cx, check_cell->cy).within_robot &&
         (cost == costmap_2d::LETHAL_OBSTACLE ||
          cost == costmap_2d::INSCRIBED_INFLATED_OBSTACLE ||
@@ -171,14 +174,18 @@ namespace base_local_planner{
   //update what map cells are considered path based on the global_plan
   void MapGrid::setTargetCells(const costmap_2d::Costmap2D& costmap,
       const std::vector<geometry_msgs::PoseStamped>& global_plan) {
+    ROS_WARN("global_plan_.size() = %ld", global_plan.size());
+    ros::Time start_time = ros::Time::now();
     sizeCheck(costmap.getSizeInCellsX(), costmap.getSizeInCellsY());
-
+    ROS_WARN("costmap size: (%lf, %lf)", costmap.getSizeInCellsX(), costmap.getSizeInCellsY());
+    ROS_INFO("MapGrid::setTargetCells 1 : %lf sec",(ros::Time::now()-start_time).toSec());
     bool started_path = false;
 
     queue<MapCell*> path_dist_queue;
 
     std::vector<geometry_msgs::PoseStamped> adjusted_global_plan;
     adjustPlanResolution(global_plan, adjusted_global_plan, costmap.getResolution());
+    ROS_INFO("MapGrid::setTargetCells 2 : %lf sec",(ros::Time::now()-start_time).toSec());
     if (adjusted_global_plan.size() != global_plan.size()) {
       ROS_DEBUG("Adjusted global plan resolution, added %zu points", adjusted_global_plan.size() - global_plan.size());
     }
@@ -203,15 +210,16 @@ namespace base_local_planner{
           i, adjusted_global_plan.size(), global_plan.size());
       return;
     }
+    ROS_INFO("MapGrid::setTargetCells 3 : %lf sec",(ros::Time::now()-start_time).toSec());
 
     computeTargetDistance(path_dist_queue, costmap);
+    ROS_INFO("MapGrid::setTargetCells 4 : %lf sec",(ros::Time::now()-start_time).toSec());
   }
 
   //mark the point of the costmap as local goal where global_plan first leaves the area (or its last point)
   void MapGrid::setLocalGoal(const costmap_2d::Costmap2D& costmap,
       const std::vector<geometry_msgs::PoseStamped>& global_plan) {
     sizeCheck(costmap.getSizeInCellsX(), costmap.getSizeInCellsY());
-
     int local_goal_x = -1;
     int local_goal_y = -1;
     bool started_path = false;
@@ -258,6 +266,8 @@ namespace base_local_planner{
     MapCell* check_cell;
     unsigned int last_col = size_x_ - 1;
     unsigned int last_row = size_y_ - 1;
+    int count = 0;
+
     while(!dist_queue.empty()){
       current_cell = dist_queue.front();
 
@@ -304,7 +314,11 @@ namespace base_local_planner{
           }
         }
       }
+
+      count++;
     }
+    ROS_WARN("compute loop: %d", count);
+
   }
 
 };

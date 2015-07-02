@@ -84,18 +84,28 @@ namespace base_local_planner {
     double loop_traj_cost, best_traj_cost = -1;
     bool gen_success;
     int count, count_valid;
+
+    ros::Time start_time = ros::Time::now();
+
+    ROS_INFO("time3.1 : %lf sec", (ros::Time::now() - start_time).toSec());
+    
+    int c = 0;
     for (std::vector<TrajectoryCostFunction*>::iterator loop_critic = critics_.begin(); loop_critic != critics_.end(); ++loop_critic) {
       TrajectoryCostFunction* loop_critic_p = *loop_critic;
       if (loop_critic_p->prepare() == false) {
         ROS_WARN("A scoring function failed to prepare");
         return false;
       }
+      ROS_INFO("time3.1.%d : %lf sec", c++, (ros::Time::now() - start_time).toSec());
     }
+
+    ROS_INFO("time3.2 : %lf sec", (ros::Time::now() - start_time).toSec());
 
     for (std::vector<TrajectorySampleGenerator*>::iterator loop_gen = gen_list_.begin(); loop_gen != gen_list_.end(); ++loop_gen) {
       count = 0;
       count_valid = 0;
       TrajectorySampleGenerator* gen_ = *loop_gen;
+      //      while (gen_->hasMoreTrajectories()) {
       while (gen_->hasMoreTrajectories()) {
         gen_success = gen_->nextTrajectory(loop_traj);
         if (gen_success == false) {
@@ -138,6 +148,8 @@ namespace base_local_planner {
         break;
       }
     }
+
+    ROS_INFO("time3.3 : %lf sec", (ros::Time::now() - start_time).toSec());
     return best_traj_cost >= 0;
   }
 

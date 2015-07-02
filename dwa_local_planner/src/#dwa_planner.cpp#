@@ -272,7 +272,7 @@ namespace dwa_local_planner {
       forward_point_distance_ * cos(angle_to_goal);
     front_global_plan.back().pose.position.y = front_global_plan.back().pose.position.y + forward_point_distance_ *
       sin(angle_to_goal);
-    ROS_ERROR("global_plan_.size() = %ld", global_plan_.size());
+
     goal_front_costs_.setTargetPoses(front_global_plan);
     
     // keeping the nose on the path

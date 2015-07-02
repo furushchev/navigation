@@ -195,8 +195,10 @@ namespace dwa_local_planner {
     drive_cmds.frame_id_ = costmap_ros_->getBaseFrameID();
     
     // call with updated footprint
+    ros::Time start_time = ros::Time::now();
     base_local_planner::Trajectory path = dp_->findBestPath(global_pose, robot_vel, drive_cmds, costmap_ros_->getRobotFootprint());
     //ROS_ERROR("Best: %.2f, %.2f, %.2f, %.2f", path.xv_, path.yv_, path.thetav_, path.cost_);
+    ROS_INFO("dp_->findBestPath: %lf sec", (ros::Time::now() - start_time).toSec());
 
     /* For timing uncomment
     gettimeofday(&end, NULL);
